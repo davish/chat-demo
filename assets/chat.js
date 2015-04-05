@@ -1,7 +1,7 @@
 var chatWith = null;
 var username = localStorage.getItem("username"); // get the username from localStorage.
 var timeout = null;
-
+var converter = new Showdown.converter()
 $(document).ready(function() {
   if (!chatWith) { // if there's no chat window open, hide the chat form and message box.
     $('form#send').hide();
@@ -99,8 +99,9 @@ function addMessage(user, message) {
   if (user !== username) {
     additionalClass="them"
   }
+  var h = converter.makeHtml(message);
   $('#messages').append('<li class='+additionalClass+'><span class="user">'+user+'</span>\
-    <span class="message">'+message+'</span></li>');
+    <span class="message">'+h.slice(3, h.length-4)+'</span></li>');
 }
 // append message to the queue
 function addFriend(friend) {
