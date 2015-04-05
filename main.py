@@ -68,9 +68,10 @@ class api(Handler):
         result['friends'].append({"username": m.recipient, "timestamp": m.timestamp})
         friendAdded[m.recipient] = True
     q3 = db.GqlQuery("SELECT author,timestamp FROM Message WHERE recipient=:1 ORDER BY timestamp DESC", user)
-    if m.author not in friendAdded and m.author:
-        result['friends'].append({"username": m.author, "timestamp": m.timestamp})
-        friendAdded[m.author] = True
+    for m in q3.run():
+      if m.author not in friendAdded and m.author:
+          result['friends'].append({"username": m.author, "timestamp": m.timestamp})
+          friendAdded[m.author] = True
 
     # now I have to sort the list so that, whether the user was the last to recieve or to send a message
     # in the convo, their friends show up in order of the most recent correspondence.
