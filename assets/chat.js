@@ -1,24 +1,21 @@
 var chatWith = null;
-var username = localStorage.getItem("username");
+var username = localStorage.getItem("username"); // get the username from localStorage.
 var timeout = null;
 
 $(document).ready(function() {
-  if (!chatWith) {
+  if (!chatWith) { // if there's no chat window open, hide the chat form and message box.
     $('form#send').hide();
     $('.msgView').hide();
   }
 
-  if (!username) {
+  if (!username) { // if a username hasn't been set, open up the loginmodal.
     $('#loginModal').modal();
+    $('#logout').hide();
+  } else {
+    $('#nickname').text(username); // otherwise, set put the username in the navbar.
   }
 
-  $('form#login').submit(function(e) {
-    username = e.target.username.value;
-    localStorage.setItem("username", username);
-    $('#loginModal').modal('hide');
-    return false;
-  });
-
+  // listen for when someone tries to send a message, and POST to the server about it.
   $('form#send').submit(function(e) {
     if (username && chatWith) {
       $.ajax('/chat', {
@@ -29,31 +26,21 @@ $(document).ready(function() {
           message: e.target.message.value
         },
         success: function(data) {
-          poll();
+          poll(); // once we know it worked, let's query the server for new data.
+          // an improvement would be sending back the data in the same request.
         }
       });
+      addMessage(username, e.target.message.value);
+      e.target.message.value = "";
     } 
     else if (!username) {
       $('#loginModal').modal();
     }
     return false;
   });
-  $('form#newChat').submit(function(e) {
-    var friend = e.target.u.value;
-    chatWith = friend;
-    $('#friends').prepend('<li><a href="#" class="userfriend" id="'+friend+'">'+friend+'</a></li>');
-    poll();
-    $('form#send').show();
-    $('.msgView').show();
-    return false;
-  });
-  $('a').click(function(e) {
-    chatWith = e.target.id;
-  });
-
+  // http://techoctave.com/c7/posts/60-simple-long-polling-example-with-javascript-and-jquery
   (function loop() {
     setTimeout(function() {
-      console.log("polling...");
       if (username) { // if there is a user, send a request.
         poll(loop);
       } else { // don't send the request, it's wasteful
@@ -62,12 +49,34 @@ $(document).ready(function() {
     }, 1000); // poll for new data every 5 seconds.
   })();
 
-})
+  $('form#login').submit(function(e) {
+    // get username from form and save it.
+    username = e.target.username.value; 
+    localStorage.setItem("username", username);
+    $('#loginModal').modal('hide'); // hide the modal
+    $('#logout').show();
+    $('#nickname').text(username);
+    return false; // loop() function will automatically start querying the server once username is set.
+  });
+
+  $('form#newChat').submit(function(e) {
+    chatWith = e.target.u.value;
+    poll(); // check for new msgs right away
+    $('form#send').show(); // show boxes
+    $('.msgView').show();
+    return false;
+  });
+  $('a').click(function(e) {
+    chatWith = e.target.id;
+    poll();
+  });
+});
 
 function renderMessages(messages) {
   $('#messages').html(''); // clear messages
+  if (chatWith)
+    $('.msgheading').text("Chat with " + chatWith)
   for (var i=0; i<messages.length;i++) {
-    console.log(messages[i]);
     addMessage(messages[i].author, messages[i].content);
   }
 }
@@ -76,6 +85,7 @@ function renderFriendList(friends) {
   $('#friends').html('');
   for (var i=0; i<friends.length;i++)
     addFriend(friends[i].username);
+  // rebind the listener since we put in new elements.
   $('a').unbind();
   $('a.userfriend').click(function(e) {
     chatWith = e.target.id;
@@ -84,14 +94,21 @@ function renderFriendList(friends) {
   });
 }
 
+// append a message to the queue
 function addMessage(user, message) {
   $('#messages').append('<li><span class="user">'+user+'</span>\
     <span class="message">'+message+'</span></li>');
 }
-
+// append message to the queue
 function addFriend(friend) {
   $('#friends').append('<li><a href="#" class="userfriend" id="'+friend+'">'+friend+'</a></li>');
 }
+
+function logOut() { // workaround for the #logout click listener not working for some reason
+  localStorage.setItem("username", "");
+  location.reload();
+}
+
 /**
  * We're going to send one request to the server, with two things: our username,
  * and the person we're talking to. If we're not talking to anyone, chatWith=null.
@@ -105,7 +122,6 @@ function addFriend(friend) {
  * we had the most recent correspondance with is processed first.
  */
 
-
 function poll(callback) {
   $.ajax('/chat', { 
     method: "GET",
@@ -114,7 +130,6 @@ function poll(callback) {
       chatWith: chatWith
     },
     success: function(data){
-      console.log(data);
       renderFriendList(data.friends);
       if (data.messages)
         renderMessages(data.messages);

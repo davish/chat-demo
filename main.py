@@ -9,6 +9,8 @@ import json
 import datetime
 from google.appengine.ext import db
 
+from cgi import escape
+
 views_dir = os.path.join(os.path.dirname(__file__), 'views')
 
 """
@@ -30,6 +32,7 @@ class Handler(webapp2.RequestHandler):
 class HomePage(Handler):
   def get(self):
     self.render('index.html')
+
 # fix for serializing datetime objects as ISODate JSON:
 # http://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
 class myEncoder(json.JSONEncoder):
@@ -48,35 +51,43 @@ class api(Handler):
 
     result = {'friends': [], 'messages': []}
 
-    # TODO: use datastore to get the relevant data.
-    """
-      messages: this will be easy. all you have to do is query for messages where
-      userTo is the user and userFrom is chatWith, and vice versa. 
-
-      friends is harder. you need to find all users that the user has communicated with.
-      find all messages where userTo or userFrom is the user, loop through each of them,
-      and if `thisUser` not in friends then add it to friends. problem is this is O(n) 
-      for how many messages you have in the database.
-    """
-    q1 = db.GqlQuery("SELECT * FROM Message WHERE author IN :1 AND recipient IN :1 ORDER BY timestamp ASC", [user, chatWith])
+    # Get all the messages between these two (find any message where either of them were the recipient)
+    # AND one of them was the author
+    q1 = db.GqlQuery("SELECT * FROM Message WHERE author IN :1 AND recipient IN :1 ORDER BY timestamp ASC", 
+      [user, chatWith])
     for m in q1.run():
       result['messages'].append({"author": m.author, "content": m.content, "timestamp": m.timestamp})
+    
+    # Since GQL doesn't have an OR operator, I have to do a kind of union of two queries,
+    # One checking for when the user was the author, and logging the recipient, and vice versa for the other.
+    friendAdded = {}
+    q2 = db.GqlQuery("SELECT recipient,timestamp FROM Message WHERE author=:1 ORDER BY timestamp DESC", user)
+    for m in q2.run():
+      # only add to the list if they're not represented already, going to be > 1 msg per user.
+      if m.recipient not in friendAdded and m.recipient: 
+        result['friends'].append({"username": m.recipient, "timestamp": m.timestamp})
+        friendAdded[m.recipient] = True
+    q3 = db.GqlQuery("SELECT author,timestamp FROM Message WHERE recipient=:1 ORDER BY timestamp DESC", user)
+    if m.author not in friendAdded and m.author:
+        result['friends'].append({"username": m.author, "timestamp": m.timestamp})
+        friendAdded[m.author] = True
+
+    # now I have to sort the list so that, whether the user was the last to recieve or to send a message
+    # in the convo, their friends show up in order of the most recent correspondence.
+    result['friends'] = sorted(result['friends'], key=lambda m: m['timestamp'], reverse=True)
+
     toSend = myEncoder().encode(result)
-    # print toSend
     self.response.write(toSend)
+
   def post(self):
     parsed = parse_qs(self.request.body, True)
-    m = Message(author=parsed['userFrom'][0],
-                    recipient=parsed['userTo'][0],
-                    content=parsed['message'][0],
+    # protect against XSS! everything that's sent from the webpage is escaped using cgi.escape
+    m = Message(author=escape(parsed['userFrom'][0]),
+                    recipient=escape(parsed['userTo'][0]),
+                    content=escape(parsed['message'][0]),
                     timestamp=datetime.datetime.now())
     m.put()
-
-class logIn(Handler):
-  def get(self):
-    pass
-  def post(self):
-    pass
+    self.response.write("success");
 
 app = webapp2.WSGIApplication([
   ('/', HomePage),

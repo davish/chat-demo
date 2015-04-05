@@ -15,3 +15,35 @@ indexes:
   - name: author
   - name: recipient
   - name: timestamp
+
+- kind: Message
+  properties:
+  - name: author
+  - name: timestamp
+  - name: recipient
+
+- kind: Message
+  properties:
+  - name: author
+  - name: timestamp
+    direction: desc
+  - name: recipient
+
+- kind: Message
+  properties:
+  - name: recipient
+  - name: author
+  - name: timestamp
+
+- kind: Message
+  properties:
+  - name: recipient
+  - name: timestamp
+  - name: author
+
+- kind: Message
+  properties:
+  - name: recipient
+  - name: timestamp
+    direction: desc
+  - name: author

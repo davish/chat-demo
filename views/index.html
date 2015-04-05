@@ -12,10 +12,30 @@
   <script src="assets/chat.js"></script>
 </head>
 <body>
+<nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Chat</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse loggedIn" id="collapse">
+          <ul class="nav navbar-nav navbar-right">
+          <li><a href="#" id="nickname"></a></li>
+          <li><a href="#" id="logout" onclick="logOut()">Log Out</a></li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
   <div class="container">
-    <div class="row">
-    <h1>Welcome to Chat</h1>
-    </div>
+    
     <div class="row">
       <div class="col-md-3">
         <div class="panel panel-default">
@@ -39,9 +59,16 @@
           </div>
         </div>
       </div>
-      <div class="col-md-9 panel panel-default msgView" style="height: 100%">
-        <ul id="messages">
-        </ul>
+      <div class="col-md-9" style="height: 100%">
+        <div class="panel panel-default msgView">
+          <div class="panel-heading">
+            <h3 class="panel-title msgheading"></h3>
+          </div>
+          <div class="panel-body">
+            <ul id="messages">
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
     <div class="row">
