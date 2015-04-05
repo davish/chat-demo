@@ -1,3 +1,20 @@
+#messages {
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px;
+}
+
+#messages li {
+  padding-bottom: 5px;
+  padding-top: 5px;
+  padding-left: 5px;
+  width: 100%;
+}
+
+#messages .them {
+  background: #eee;
+}
+
 #message { 
   width: 90%;
 }
