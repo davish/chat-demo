@@ -30,7 +30,6 @@ $(document).ready(function() {
           // an improvement would be sending back the data in the same request.
         }
       });
-      addMessage(username, e.target.message.value);
       e.target.message.value = "";
     } 
     else if (!username) {
@@ -73,9 +72,9 @@ $(document).ready(function() {
 });
 
 function renderMessages(messages) {
-  $('#messages').html(''); // clear messages
   if (chatWith)
     $('.msgheading').text("Chat with " + chatWith)
+  $('#messages').html(''); // clear messages
   for (var i=0; i<messages.length;i++) {
     addMessage(messages[i].author, messages[i].content);
   }
@@ -96,7 +95,11 @@ function renderFriendList(friends) {
 
 // append a message to the queue
 function addMessage(user, message) {
-  $('#messages').append('<li><span class="user">'+user+'</span>\
+  var additionalClass=""
+  if (user !== username) {
+    additionalClass="them"
+  }
+  $('#messages').append('<li class='+additionalClass+'><span class="user">'+user+'</span>\
     <span class="message">'+message+'</span></li>');
 }
 // append message to the queue
