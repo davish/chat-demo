@@ -11,8 +11,29 @@
   width: 100%;
 }
 
-#messages .them {
+#friends {
+  margin: 0px;
+  padding: 0px;
+  list-style-type: none;
+}
+#friends a {
+  display: block;
+  width: 100%;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 20px;
+}
+#friends li:nth-child(odd) {
   background: #eee;
+}
+
+.me {
+  /*float: right;*/
+}
+
+.them {
+  background: #eee;
+  /*float: right;*/
 }
 
 #message { 

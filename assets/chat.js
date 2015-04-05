@@ -99,10 +99,12 @@ function addMessage(user, message) {
   var additionalClass=""
   if (user !== username) {
     additionalClass="them"
+  } else {
+    additionalClass="me"
   }
   var h = converter.makeHtml(message);
-  $('#messages').append('<li class='+additionalClass+'><span class="user">'+user+'</span>\
-    <span class="message">'+h.slice(3, h.length-4)+'</span></li>');
+  $('#messages').append('<li class='+additionalClass+'><span class='+additionalClass+'><span class="user">'+user+'</span>\
+    <span class="message">'+h.slice(3, h.length-4)+'</span></span></li>');
 }
 // append message to the queue
 function addFriend(friend) {
