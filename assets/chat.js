@@ -63,6 +63,7 @@ $(document).ready(function() {
     poll(); // check for new msgs right away
     $('form#send').show(); // show boxes
     $('.msgView').show();
+    e.target.u.value = "";
     return false;
   });
   $('a').click(function(e) {
