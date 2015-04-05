@@ -1,0 +1,6 @@
+#message { 
+  width: 90%;
+}
+.user::after {
+  content: ": ";
+}
